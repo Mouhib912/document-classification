@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  document-classifier:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./uploads:/app/uploads
+    environment:
+      - MODEL_NAME=yolov8m-cls.pt
+      - MAX_UPLOAD_SIZE=10485760
+    restart: unless-stopped
+
+

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Classifier - AI Document Identification</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 50px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background-color: #f8f9ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background-color: #f0f0ff;
+        }
+
+        .upload-icon {
+            font-size: 4em;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            font-size: 1.2em;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .upload-subtext {
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .preview-container {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 10px;
+            display: block;
+            margin: 0 auto 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 30px;
+            color: white;
+            margin-top: 20px;
+        }
+
+        .result-type {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .result-detail {
+            font-size: 1em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .confidence {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #ff4444;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 20px;
+            display: block;
+            width: 100%;
+            transition: transform 0.2s;
+        }
+
+        .btn-reset:hover {
+            transform: translateY(-2px);
+        }
+
+        .doc-types {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .doc-types h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .doc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .doc-tag {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Document Classifier</h1>
+        <p class="subtitle">AI-powered document identification using vision models</p>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📄</div>
+            <div class="upload-text">Drop your document here or click to browse</div>
+            <div class="upload-subtext">Supports JPG, PNG, PDF images</div>
+            <input type="file" id="fileInput" accept="image/*">
+        </div>
+
+        <div class="preview-container" id="previewContainer">
+            <img id="previewImage" class="preview-image" alt="Document preview">
+            
+            <div class="loading" id="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p style="margin-top: 15px; color: #666;">Analyzing document...</p>
+            </div>
+
+            <div id="result"></div>
+            
+            <button class="btn-reset" id="resetBtn" style="display: none;">Upload Another Document</button>
+        </div>
+
+        <div class="doc-types">
+            <h3>Supported Document Types:</h3>
+            <div class="doc-grid">
+                <div class="doc-tag">ID Card</div>
+                <div class="doc-tag">Passport</div>
+                <div class="doc-tag">Residence Permit</div>
+                <div class="doc-tag">Bank Statement</div>
+                <div class="doc-tag">Invoice</div>
+                <div class="doc-tag">Receipt</div>
+                <div class="doc-tag">Contract</div>
+                <div class="doc-tag">Certificate</div>
+                <div class="doc-tag">Tax Document</div>
+                <div class="doc-tag">Payslip</div>
+                <div class="doc-tag">Utility Bill</div>
+                <div class="doc-tag">Medical Document</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewImage = document.getElementById('previewImage');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+        const resetBtn = document.getElementById('resetBtn');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            previewContainer.style.display = 'none';
+            uploadArea.style.display = 'block';
+            result.innerHTML = '';
+            resetBtn.style.display = 'none';
+            fileInput.value = '';
+        });
+
+        async function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                showError('Please upload an image file');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                uploadArea.style.display = 'none';
+                previewContainer.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+
+            loading.style.display = 'block';
+            result.innerHTML = '';
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/classify', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                loading.style.display = 'none';
+
+                if (response.ok) {
+                    showResult(data);
+                } else {
+                    showError(data.detail || 'Classification failed');
+                }
+            } catch (error) {
+                loading.style.display = 'none';
+                showError('Network error: ' + error.message);
+            }
+        }
+
+        function showResult(data) {
+            const docType = data.document_type.replace(/_/g, ' ').toUpperCase();
+            const confidence = data.confidence.toUpperCase();
+            
+            result.innerHTML = `
+                <div class="result-card">
+                    <div class="result-type">${docType}</div>
+                    <div class="result-detail">📁 Filename: ${data.filename}</div>
+                    <div class="result-detail">🔍 Confidence: <span class="confidence">${data.confidence}</span></div>
+                    ${data.top_predictions && data.top_predictions.length > 1 ? `
+                        <div class="result-detail" style="margin-top: 15px; font-size: 0.9em; opacity: 0.8;">
+                            Top predictions:<br>
+                            ${data.top_predictions.map((p, i) => `${i+1}. ${p.type.replace(/_/g, ' ')} (${(p.confidence * 100).toFixed(1)}%)`).join('<br>')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            resetBtn.style.display = 'block';
+        }
+
+        function showError(message) {
+            result.innerHTML = `<div class="error">❌ ${message}</div>`;
+            resetBtn.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

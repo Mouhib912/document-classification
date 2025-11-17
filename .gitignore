@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+uploads/*
+!uploads/.gitkeep
+.env
+.venv
+venv/
+*.log
+*.pt
+*.pth
+yolov8*.pt
+donut-finetuned/
+training_data/
+main_donut_backup.py
