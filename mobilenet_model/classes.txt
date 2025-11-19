@@ -1,0 +1,4 @@
+driver_license
+id_card
+passport
+residence_permit

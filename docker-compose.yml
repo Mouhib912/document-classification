@@ -7,9 +7,24 @@ services:
       - "8000:8000"
     volumes:
       - ./uploads:/app/uploads
+      - ./mobilenet_model:/app/mobilenet_model
     environment:
-      - MODEL_NAME=yolov8m-cls.pt
+      - MODEL_DIR=mobilenet_model
       - MAX_UPLOAD_SIZE=10485760
     restart: unless-stopped
+    command: python main_mobilenet.py
+  
+  mobilenet-trainer:
+    build:
+      context: .
+      dockerfile: Dockerfile.train_mobilenet
+    volumes:
+      - ./training_data:/app/training_data
+      - ./mobilenet_model:/app/mobilenet_model
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: python -u train_mobilenet.py --data_dir training_data --output_dir mobilenet_model --epochs 20 --batch_size 8
+    profiles:
+      - training
 
 
