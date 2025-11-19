@@ -66,7 +66,7 @@ To use a different YOLO model, update `docker-compose.yml`:
 
 ```yaml
 environment:
-  - MODEL_NAME=yolov8l-cls.pt  # Use larger model for better accuracy
+  - MODEL_NAME=yolov8l-cls.pt  
 ```
 
 Available options:
@@ -156,11 +156,3 @@ Default: `yolov8m-cls.pt` (balanced performance)
 4. Model returns top 5 predictions with confidence scores
 5. Primary classification displayed with all alternatives
 6. Results shown instantly in browser
-
-## Why YOLO?
-
-- ⚡ **Fast**: 10-100ms per classification
-- 📦 **Small**: Models from 3MB to 200MB
-- 🎯 **Accurate**: Pre-trained on ImageNet, adaptable to documents
-- 🔧 **Easy**: No training required, works out of the box
-- 💪 **Robust**: Handles various image qualities and angles
